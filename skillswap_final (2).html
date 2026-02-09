@@ -1,0 +1,3285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="description" content="SkillSwap Local - Trade skills with your local community. Exchange talents, build relationships, and get things done without spending money.">
+    <meta name="theme-color" content="#1a365d">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>SkillSwap Local - Trade Skills, Build Community</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CRITICAL: Define functions in HEAD before body loads -->
+    <script>
+        // Define ALL click handler functions IMMEDIATELY
+        function enterApp() {
+            console.log('enterApp called');
+            try {
+                sessionStorage.setItem('hasSeenLanding', 'true');
+            } catch(e) {}
+            
+            const landing = document.getElementById('landingPage');
+            const main = document.getElementById('mainApp');
+            
+            if (landing && main) {
+                landing.style.display = 'none';
+                main.style.display = 'block';
+                main.classList.add('show');
+                window.scrollTo(0, 0);
+            }
+        }
+        
+        function scrollToTab(tab) {
+            console.log('scrollToTab:', tab);
+            switchTab(tab);
+            setTimeout(() => {
+                const el = document.getElementById('browse');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+        
+        function switchTab(tab) {
+            console.log('switchTab:', tab);
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            const buttons = document.querySelectorAll('.tab-btn');
+            if (tab === 'browse' && buttons[0]) buttons[0].classList.add('active');
+            if (tab === 'post' && buttons[1]) buttons[1].classList.add('active');
+            if (tab === 'premium' && buttons[2]) buttons[2].classList.add('active');
+            
+            const content = document.getElementById(tab + '-tab');
+            if (content) content.classList.add('active');
+        }
+        
+        function toggleMobileMenu() {
+            const menu = document.getElementById('navMenu');
+            const icon = document.getElementById('mobileMenuIcon');
+            if (menu) menu.classList.toggle('active');
+            if (icon) {
+                icon.className = menu && menu.classList.contains('active') ? 'fas fa-times' : 'fas fa-bars';
+            }
+        }
+        
+        function closeMobileMenu() {
+            const menu = document.getElementById('navMenu');
+            const icon = document.getElementById('mobileMenuIcon');
+            if (menu) menu.classList.remove('active');
+            if (icon) icon.className = 'fas fa-bars';
+        }
+        
+        function openHowItWorks() {
+            console.log('openHowItWorks');
+            const page = document.getElementById('howItWorksPage');
+            if (page) {
+                page.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                page.scrollTop = 0;
+            }
+        }
+        
+        function closeHowItWorks() {
+            const page = document.getElementById('howItWorksPage');
+            if (page) page.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function openGetStarted() {
+            console.log('openGetStarted');
+            const landing = document.getElementById('landingPage');
+            if (landing && landing.style.display !== 'none') {
+                enterApp();
+            }
+            setTimeout(() => {
+                switchTab('post');
+                const el = document.getElementById('browse');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }, 500);
+        }
+        
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme') || 'light';
+            const newTheme = current === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            try {
+                localStorage.setItem('theme', newTheme);
+            } catch(e) {}
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        
+        console.log('✅ All functions defined in HEAD');
+    </script>
+    
+    <style>
+        :root {
+            --navy: #1a365d;
+            --grey-blue: #4a5568;
+            --light-blue: #718096;
+            --beige: #f5e6d3;
+            --light-beige: #faf6f1;
+            --white: #ffffff;
+            --success: #48bb78;
+            --warning: #ed8936;
+            --danger: #f56565;
+        }
+
+        /* Dark Theme Variables */
+        [data-theme="dark"] {
+            --navy: #0a0e27;
+            --grey-blue: #1a1f3a;
+            --light-blue: #e2e8f0;
+            --beige: #d4c5b0;
+            --light-beige: #0f1629;
+            --white: #0a0e27;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --success: #10b981;
+            --warning: #d4c5b0;
+            --danger: #ef4444;
+        }
+
+        /* Light Theme Text Colors */
+        :root {
+            --text-primary: #1a365d;
+            --text-secondary: #4a5568;
+            --card-bg: #ffffff;
+            --border-color: #f5e6d3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--light-beige) 0%, var(--beige) 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--navy), var(--grey-blue));
+            border: none;
+            color: var(--beige);
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(26, 54, 93, 0.3);
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 12px 40px rgba(26, 54, 93, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 8px 30px rgba(26, 54, 93, 0.3);
+            }
+            50% {
+                box-shadow: 0 8px 30px rgba(26, 54, 93, 0.6);
+            }
+        }
+
+        [data-theme="dark"] .theme-toggle {
+            background: linear-gradient(135deg, #d4c5b0, #c4b5a0);
+            color: #0a0e27;
+            box-shadow: 0 8px 30px rgba(212, 197, 176, 0.4);
+        }
+
+        [data-theme="dark"] .theme-toggle:hover {
+            box-shadow: 0 12px 40px rgba(212, 197, 176, 0.6);
+        }
+
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1629 100%);
+        }
+
+        /* Navigation */
+        .navbar {
+            background: var(--navy);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(26, 54, 93, 0.3);
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--beige);
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+            animation: rotate 3s ease-in-out infinite;
+        }
+
+        @keyframes rotate {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: var(--beige);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .nav-menu a:hover {
+            background: rgba(245, 230, 211, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-menu .btn-primary {
+            background: var(--beige);
+            color: var(--navy);
+            padding: 0.7rem 1.5rem;
+            font-weight: 600;
+        }
+
+        .nav-menu .btn-primary:hover {
+            background: var(--light-beige);
+            transform: translateY(-2px);
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--beige);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                right: -100%;
+                width: 250px;
+                height: calc(100vh - 70px);
+                background: var(--navy);
+                flex-direction: column;
+                padding: 2rem 1rem;
+                gap: 1rem;
+                transition: right 0.3s ease;
+                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+                z-index: 999;
+            }
+
+            [data-theme="dark"] .nav-menu {
+                background: #1a1f3a;
+                border-left: 2px solid #d4c5b0;
+            }
+
+            .nav-menu.active {
+                right: 0;
+            }
+
+            .nav-menu li {
+                width: 100%;
+            }
+
+            .nav-menu a {
+                display: block;
+                width: 100%;
+                text-align: center;
+                padding: 1rem;
+                border-radius: 8px;
+            }
+
+            .nav-menu a:hover {
+                background: rgba(212, 197, 176, 0.1);
+            }
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 80px;
+            padding: 4rem 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--grey-blue) 100%);
+            color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="dark"] .hero {
+            background: linear-gradient(135deg, #1a1f3a 0%, #0a0e27 50%, #1e293b 100%);
+            color: var(--text-primary);
+            box-shadow: 0 10px 40px rgba(212, 197, 176, 0.1);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(245, 230, 211, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -200px;
+            right: -200px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-30px); }
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease-out;
+            line-height: 1.2;
+            color: var(--beige);
+        }
+
+        [data-theme="dark"] .hero h1 {
+            color: #f5e6d3;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            color: var(--beige);
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            animation: fadeInUp 0.8s ease-out 0.4s backwards;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .btn-hero-primary {
+            background: var(--beige);
+            color: var(--navy);
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .btn-hero-primary:hover {
+            background: var(--light-beige);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(245, 230, 211, 0.3);
+        }
+
+        .btn-hero-primary:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .btn-hero-secondary {
+            background: transparent;
+            color: var(--beige);
+            border: 2px solid var(--beige);
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .btn-hero-secondary:hover {
+            background: rgba(245, 230, 211, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .btn-hero-secondary:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        /* Stats Section */
+        .stats {
+            background: var(--card-bg);
+            padding: 3rem 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: -3rem auto 0;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        [data-theme="dark"] .stats {
+            background: var(--card-bg);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-item {
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        [data-theme="dark"] .tab-nav {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            background: var(--light-beige);
+        }
+
+        [data-theme="dark"] .tab-btn:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+
+        .tab-btn.active {
+            background: var(--navy);
+            color: var(--beige);
+        }
+
+        [data-theme="dark"] .tab-btn.active {
+            background: linear-gradient(135deg, #d4c5b0, #c4b5a0);
+            color: #0a0e27;
+            box-shadow: 0 4px 15px rgba(212, 197, 176, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Skills Grid */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .skill-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="dark"] .skill-card {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(212, 197, 176, 0.1);
+        }
+
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--navy), var(--grey-blue));
+        }
+
+        [data-theme="dark"] .skill-card::before {
+            background: linear-gradient(90deg, #d4c5b0, #c4b5a0);
+            box-shadow: 0 0 10px rgba(212, 197, 176, 0.5);
+        }
+
+        .skill-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(26, 54, 93, 0.15);
+        }
+
+        [data-theme="dark"] .skill-card:hover {
+            box-shadow: 0 15px 50px rgba(212, 197, 176, 0.2);
+            border-color: rgba(212, 197, 176, 0.3);
+        }
+
+        .skill-header {
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .skill-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--navy), var(--grey-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .skill-info {
+            flex: 1;
+        }
+
+        .skill-user {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        [data-theme="dark"] .skill-user {
+            color: #f8fafc;
+        }
+
+        .skill-location {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        [data-theme="dark"] .skill-location {
+            color: #cbd5e1;
+        }
+
+        .skill-title {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        [data-theme="dark"] .skill-title {
+            color: #d4c5b0;
+        }
+
+        .skill-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        [data-theme="dark"] .skill-description {
+            color: #cbd5e1;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tag {
+            padding: 0.4rem 1rem;
+            background: var(--light-beige);
+            color: var(--text-secondary);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        [data-theme="dark"] .tag {
+            background: rgba(212, 197, 176, 0.15);
+            color: #e2e8f0;
+            border: 1px solid rgba(212, 197, 176, 0.3);
+        }
+
+        .skill-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .time-bank {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        [data-theme="dark"] .time-bank {
+            color: #d4c5b0;
+        }
+
+        .btn-contact {
+            padding: 0.7rem 1.5rem;
+            background: var(--navy);
+            color: var(--beige);
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 44px; /* Better touch target for mobile */
+        }
+
+        [data-theme="dark"] .btn-contact {
+            background: linear-gradient(135deg, #d4c5b0, #c4b5a0);
+            color: #0a0e27;
+            box-shadow: 0 4px 15px rgba(212, 197, 176, 0.3);
+        }
+
+        .btn-contact:hover {
+            background: var(--grey-blue);
+            transform: scale(1.05);
+        }
+
+        [data-theme="dark"] .btn-contact:hover {
+            box-shadow: 0 6px 20px rgba(212, 197, 176, 0.5);
+            transform: scale(1.05);
+        }
+
+        /* Post Skill Form */
+        .post-skill-container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        [data-theme="dark"] .post-skill-container {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s;
+            background: var(--light-beige);
+            color: var(--text-primary);
+        }
+
+        [data-theme="dark"] .form-group input,
+        [data-theme="dark"] .form-group textarea,
+        [data-theme="dark"] .form-group select {
+            background: rgba(51, 65, 85, 0.5);
+            border-color: #334155;
+            color: var(--text-primary);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--navy);
+            background: white;
+        }
+
+        [data-theme="dark"] .form-group input:focus,
+        [data-theme="dark"] .form-group textarea:focus,
+        [data-theme="dark"] .form-group select:focus {
+            border-color: #3b82f6;
+            background: rgba(51, 65, 85, 0.8);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--navy);
+            color: var(--beige);
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        [data-theme="dark"] .btn-submit {
+            background: linear-gradient(135deg, #d4c5b0, #c4b5a0);
+            color: #0a0e27;
+            box-shadow: 0 4px 20px rgba(212, 197, 176, 0.3);
+        }
+
+        .btn-submit:hover {
+            background: var(--grey-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(26, 54, 93, 0.3);
+        }
+
+        [data-theme="dark"] .btn-submit:hover {
+            box-shadow: 0 8px 30px rgba(212, 197, 176, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 54, 93, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+
+        [data-theme="dark"] .modal {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: scaleIn 0.3s;
+            position: relative;
+        }
+
+        [data-theme="dark"] .modal-content {
+            background: var(--card-bg);
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--light-beige);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            transition: all 0.3s;
+        }
+
+        [data-theme="dark"] .modal-close {
+            background: rgba(51, 65, 85, 0.8);
+        }
+
+        .modal-close:hover {
+            background: var(--beige);
+            transform: rotate(90deg);
+        }
+
+        .modal h2 {
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .user-profile {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--navy), var(--grey-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+        }
+
+        .rating {
+            color: var(--warning);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-section {
+            margin-bottom: 2rem;
+        }
+
+        .detail-section h3 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .detail-section p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .chat-preview {
+            background: var(--light-beige);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        [data-theme="dark"] .chat-preview {
+            background: rgba(51, 65, 85, 0.5);
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            font-size: 1rem;
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        [data-theme="dark"] .chat-input input {
+            background: rgba(51, 65, 85, 0.8);
+            border-color: #334155;
+        }
+
+        .chat-input button {
+            padding: 1rem 2rem;
+            background: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        [data-theme="dark"] .chat-input button {
+            background: #3b82f6;
+        }
+
+        /* PayPal Section */
+        .payment-section {
+            background: linear-gradient(135deg, var(--beige), var(--light-beige));
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+        }
+
+        [data-theme="dark"] .payment-section {
+            background: linear-gradient(135deg, rgba(51, 65, 85, 0.8), rgba(30, 41, 59, 0.8));
+        }
+
+        .payment-section h3 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .premium-badge {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: var(--navy);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .price-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .price-card:hover {
+            border-color: var(--navy);
+            transform: scale(1.05);
+        }
+
+        [data-theme="dark"] .price-card:hover {
+            border-color: #3b82f6;
+        }
+
+        .price-card.selected {
+            border-color: var(--navy);
+            box-shadow: 0 5px 20px rgba(26, 54, 93, 0.2);
+        }
+
+        [data-theme="dark"] .price-card.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .price-amount {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .price-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        #paypal-button-container {
+            margin-top: 1.5rem;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 2rem;
+            background: var(--card-bg);
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            animation: slideInRight 0.3s;
+            z-index: 3000;
+        }
+
+        [data-theme="dark"] .notification {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(212, 197, 176, 0.2);
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.show {
+            display: flex;
+        }
+
+        .notification.success {
+            border-left: 5px solid var(--success);
+        }
+
+        .notification.error {
+            border-left: 5px solid var(--danger);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+
+            .logo i {
+                font-size: 1.4rem;
+            }
+
+            .hero {
+                padding: 3rem 1.5rem;
+            }
+
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+                padding: 2rem 1rem;
+                margin: -2rem 1rem 0;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .stat-label {
+                font-size: 0.85rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+                margin: 2rem auto;
+            }
+
+            .tab-nav {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .tab-btn {
+                padding: 0.8rem 1rem;
+                font-size: 1rem;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .skill-card {
+                padding: 1.5rem;
+            }
+
+            .skill-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .skill-avatar {
+                margin-bottom: 1rem;
+            }
+
+            .skill-footer {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .btn-contact {
+                width: 100%;
+            }
+
+            .post-skill-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-options {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 2rem 1.5rem;
+                width: 95%;
+            }
+
+            .chat-input {
+                flex-direction: column;
+            }
+
+            .chat-input button {
+                width: 100%;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .theme-toggle {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+                bottom: 1rem;
+                right: 1rem;
+            }
+
+            .notification {
+                right: 1rem;
+                left: 1rem;
+                width: auto;
+            }
+
+            footer {
+                padding: 2rem 1rem;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-item {
+                padding: 0.5rem 0;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--beige);
+            border-radius: 50%;
+            border-top-color: var(--navy);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        footer {
+            background: var(--navy);
+            color: var(--beige);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        footer a {
+            color: var(--beige);
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Landing Page */
+        .landing-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a365d 0%, #2d3748 50%, #1a365d 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        /* CSS-only fallback: hide landing page when #skip-landing is in URL */
+        #skip-landing:target ~ .landing-page {
+            display: none;
+        }
+
+        #skip-landing:target ~ .main-app {
+            display: block !important;
+        }
+
+        .landing-page.fade-out {
+            animation: fadeOutLanding 1s ease-out forwards;
+        }
+
+        @keyframes fadeOutLanding {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* Animated Background Shapes */
+        .landing-bg-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: floatShape 20s ease-in-out infinite;
+        }
+
+        .shape-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--beige);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .shape-2 {
+            width: 300px;
+            height: 300px;
+            background: #f5e6d3;
+            bottom: -50px;
+            right: -50px;
+            animation-delay: 3s;
+        }
+
+        .shape-3 {
+            width: 200px;
+            height: 200px;
+            background: var(--beige);
+            top: 50%;
+            left: 10%;
+            animation-delay: 6s;
+        }
+
+        @keyframes floatShape {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            33% {
+                transform: translate(50px, -50px) rotate(120deg);
+            }
+            66% {
+                transform: translate(-30px, 30px) rotate(240deg);
+            }
+        }
+
+        /* Landing Content */
+        .landing-content {
+            text-align: center;
+            color: white;
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+            padding: 2rem;
+        }
+
+        .landing-logo {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: bounceIn 1s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .landing-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #f5e6d3, #faf6f1, #f5e6d3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: slideInFromLeft 1s ease-out 0.3s backwards;
+        }
+
+        @keyframes slideInFromLeft {
+            from {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .landing-subtitle {
+            font-size: 1.5rem;
+            color: var(--beige);
+            margin-bottom: 3rem;
+            animation: slideInFromRight 1s ease-out 0.6s backwards;
+            line-height: 1.8;
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .landing-features {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s ease-out 0.9s backwards;
+        }
+
+        .landing-feature {
+            text-align: center;
+        }
+
+        .landing-feature-icon {
+            font-size: 3rem;
+            color: var(--beige);
+            margin-bottom: 0.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .landing-feature-text {
+            color: #cbd5e1;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .landing-cta {
+            animation: fadeInUp 1s ease-out 1.2s backwards;
+        }
+
+        .btn-landing {
+            padding: 1.5rem 3rem;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #f5e6d3, #faf6f1);
+            color: #1a365d;
+            border: none;
+            border-radius: 50px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 40px rgba(245, 230, 211, 0.3);
+            position: relative;
+            overflow: hidden;
+            -webkit-tap-highlight-color: rgba(245, 230, 211, 0.3);
+            touch-action: manipulation;
+            text-decoration: none;
+            display: inline-block;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .btn-landing * {
+            pointer-events: none;
+        }
+
+        .btn-landing:active {
+            transform: translateY(-3px) scale(0.98);
+            background: #e5d6c3;
+        }
+
+        .btn-landing::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-landing:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-landing:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 50px rgba(245, 230, 211, 0.5);
+        }
+
+        .btn-landing span {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .landing-scroll-hint {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--beige);
+            font-size: 1rem;
+            animation: bounceUpDown 2s ease-in-out infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes bounceUpDown {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+
+        /* Main App Content - Initially Hidden */
+        .main-app {
+            display: none;
+        }
+
+        .main-app.show {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Mobile Landing Page */
+        @media (max-width: 768px) {
+            .landing-logo {
+                font-size: 3rem;
+            }
+
+            .landing-title {
+                font-size: 2.5rem;
+            }
+
+            .landing-subtitle {
+                font-size: 1.1rem;
+                margin-bottom: 2rem;
+            }
+
+            .landing-features {
+                gap: 1.5rem;
+            }
+
+            .landing-feature-icon {
+                font-size: 2rem;
+            }
+
+            .landing-feature-text {
+                font-size: 0.9rem;
+            }
+
+            .btn-landing {
+                padding: 1.2rem 2rem;
+                font-size: 1.1rem;
+            }
+
+            .landing-scroll-hint {
+                bottom: 2rem;
+                font-size: 0.9rem;
+            }
+
+            .shape-1, .shape-2, .shape-3 {
+                width: 150px;
+                height: 150px;
+            }
+        }
+
+        /* How It Works Page */
+        .how-it-works-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--light-beige) 0%, var(--beige) 100%);
+            z-index: 9998;
+            overflow-y: auto;
+            display: none;
+        }
+
+        [data-theme="dark"] .how-it-works-page {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .how-it-works-page.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            padding: 1rem 2rem;
+            background: var(--navy);
+            color: var(--beige);
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(26, 54, 93, 0.3);
+        }
+
+        [data-theme="dark"] .back-button {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 6px 30px rgba(26, 54, 93, 0.4);
+        }
+
+        .how-it-works-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 6rem 2rem 4rem;
+        }
+
+        .how-it-works-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .how-it-works-icon {
+            font-size: 4rem;
+            color: var(--navy);
+            margin-bottom: 1rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        [data-theme="dark"] .how-it-works-icon {
+            color: #d4c5b0;
+        }
+
+        .how-it-works-header h1 {
+            font-size: 3rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        [data-theme="dark"] .how-it-works-header h1 {
+            color: #d4c5b0;
+        }
+
+        .how-it-works-header p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+        }
+
+        [data-theme="dark"] .how-it-works-header p {
+            color: #cbd5e1;
+        }
+
+        .guide-timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .guide-timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--navy), var(--grey-blue));
+        }
+
+        [data-theme="dark"] .guide-timeline::before {
+            background: linear-gradient(180deg, #3b82f6, #6366f1);
+        }
+
+        .guide-step {
+            position: relative;
+            margin-bottom: 4rem;
+            padding-left: 100px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .step-number {
+            position: absolute;
+            left: 0;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--navy), var(--grey-blue));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            box-shadow: 0 5px 20px rgba(26, 54, 93, 0.3);
+            z-index: 2;
+        }
+
+        [data-theme="dark"] .step-number {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+        }
+
+        .step-content {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+        }
+
+        [data-theme="dark"] .step-content {
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .step-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 35px rgba(26, 54, 93, 0.2);
+        }
+
+        [data-theme="dark"] .step-content:hover {
+            box-shadow: 0 10px 35px rgba(59, 130, 246, 0.3);
+        }
+
+        .step-icon {
+            font-size: 2.5rem;
+            color: var(--navy);
+            margin-bottom: 1rem;
+        }
+
+        [data-theme="dark"] .step-icon {
+            color: #d4c5b0;
+        }
+
+        .step-content h3 {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        [data-theme="dark"] .step-content h3 {
+            color: #d4c5b0;
+        }
+
+        .step-content p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        [data-theme="dark"] .step-content p {
+            color: #cbd5e1;
+        }
+
+        .step-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        [data-theme="dark"] .detail-item {
+            color: #cbd5e1;
+        }
+
+        .detail-item i {
+            color: var(--success);
+            font-size: 1.2rem;
+        }
+
+        [data-theme="dark"] .detail-item i {
+            color: #d4c5b0;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            margin-top: 5rem;
+            padding: 3rem;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .faq-section {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .faq-section h2 {
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        [data-theme="dark"] .faq-section h2 {
+            color: #d4c5b0;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .faq-item {
+            padding: 1.5rem;
+            background: var(--light-beige);
+            border-radius: 15px;
+            border-left: 4px solid var(--navy);
+            transition: all 0.3s;
+        }
+
+        [data-theme="dark"] .faq-item {
+            background: rgba(51, 65, 85, 0.5);
+            border-left-color: #3b82f6;
+        }
+
+        .faq-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(26, 54, 93, 0.15);
+        }
+
+        .faq-item h4 {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin-bottom: 0.8rem;
+        }
+
+        [data-theme="dark"] .faq-item h4 {
+            color: #d4c5b0;
+        }
+
+        .faq-item p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        [data-theme="dark"] .faq-item p {
+            color: #cbd5e1;
+        }
+
+        /* Guide CTA */
+        .guide-cta {
+            text-align: center;
+            margin-top: 5rem;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--navy), var(--grey-blue));
+            border-radius: 20px;
+            color: white;
+        }
+
+        [data-theme="dark"] .guide-cta {
+            background: linear-gradient(135deg, #1e293b, #334155);
+        }
+
+        .guide-cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--beige);
+        }
+
+        .guide-cta p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: rgba(245, 230, 211, 0.9);
+        }
+
+        .btn-guide-cta {
+            padding: 1.5rem 3rem;
+            background: var(--beige);
+            color: var(--navy);
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 10px 30px rgba(245, 230, 211, 0.3);
+        }
+
+        .btn-guide-cta:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(245, 230, 211, 0.5);
+        }
+
+        /* Mobile How It Works */
+        @media (max-width: 768px) {
+            .back-button {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.8rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .how-it-works-container {
+                padding: 5rem 1rem 2rem;
+            }
+
+            .how-it-works-header h1 {
+                font-size: 2rem;
+            }
+
+            .how-it-works-header p {
+                font-size: 1rem;
+            }
+
+            .how-it-works-icon {
+                font-size: 3rem;
+            }
+
+            .guide-timeline::before {
+                left: 20px;
+            }
+
+            .guide-step {
+                padding-left: 70px;
+                margin-bottom: 3rem;
+            }
+
+            .step-number {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+
+            .step-content {
+                padding: 1.5rem;
+            }
+
+            .step-icon {
+                font-size: 2rem;
+            }
+
+            .step-content h3 {
+                font-size: 1.4rem;
+            }
+
+            .step-content p {
+                font-size: 1rem;
+            }
+
+            .faq-section {
+                padding: 2rem 1.5rem;
+            }
+
+            .faq-section h2 {
+                font-size: 1.8rem;
+            }
+
+            .faq-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .guide-cta {
+                padding: 3rem 1.5rem;
+            }
+
+            .guide-cta h2 {
+                font-size: 1.8rem;
+            }
+
+            .guide-cta p {
+                font-size: 1rem;
+            }
+
+            .btn-guide-cta {
+                padding: 1.2rem 2rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Anchor for CSS-only navigation -->
+    <div id="skip-landing" style="position: absolute; top: 0;"></div>
+
+    <!-- Landing/Welcome Page -->
+    <div class="landing-page" id="landingPage">
+        <!-- Animated Background Shapes -->
+        <div class="landing-bg-shape shape-1"></div>
+        <div class="landing-bg-shape shape-2"></div>
+        <div class="landing-bg-shape shape-3"></div>
+
+        <!-- Landing Content -->
+        <div class="landing-content">
+            <div class="landing-logo">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <h1 class="landing-title">SkillSwap Local</h1>
+            <p class="landing-subtitle">
+                Trade skills with your neighbors. Build community.<br>
+                Exchange talents without spending a dime.
+            </p>
+
+            <div class="landing-features">
+                <div class="landing-feature">
+                    <div class="landing-feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="landing-feature-text">Local Community</div>
+                </div>
+                <div class="landing-feature">
+                    <div class="landing-feature-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="landing-feature-text">Time Banking</div>
+                </div>
+                <div class="landing-feature">
+                    <div class="landing-feature-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="landing-feature-text">Verified Members</div>
+                </div>
+            </div>
+
+            <div class="landing-cta">
+                <button class="btn-landing" id="startButton" onclick="enterApp(); return false;" type="button">
+                    <span>
+                        <i class="fas fa-rocket"></i>
+                        Start Swapping Skills
+                    </span>
+                </button>
+                <!-- Debug indicator for mobile testing -->
+                <div id="debugInfo" style="margin-top: 1rem; color: rgba(255,255,255,0.5); font-size: 0.8rem; font-family: monospace; text-align: center; line-height: 1.5;">
+                    Tap button above ↑
+                </div>
+            </div>
+
+            <div class="landing-scroll-hint">
+                <i class="fas fa-chevron-down"></i> Scroll to explore
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Content -->
+    <div class="main-app" id="mainApp">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class="fas fa-exchange-alt"></i>
+                <span>SkillSwap Local</span>
+            </a>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars" id="mobileMenuIcon"></i>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="javascript:void(0)" onclick="closeMobileMenu(); scrollToTab('browse'); return false;">Browse Skills</a></li>
+                <li><a href="javascript:void(0)" onclick="openHowItWorks(); closeMobileMenu(); return false;">How It Works</a></li>
+                <li><a href="javascript:void(0)" class="btn-primary" onclick="openGetStarted(); closeMobileMenu(); return false;">Get Started</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+        <i class="fas fa-moon" id="themeIcon"></i>
+    </button>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Trade Skills, Not Money</h1>
+            <p>Connect with your local community. Exchange your talents. Build meaningful relationships while getting things done.</p>
+            <div class="hero-buttons">
+                <a href="javascript:void(0)" class="btn btn-hero-primary" onclick="scrollToTab('browse'); return false;">
+                    <i class="fas fa-search"></i> Browse Skills
+                </a>
+                <a href="javascript:void(0)" class="btn btn-hero-secondary" onclick="scrollToTab('post'); return false;">
+                    <i class="fas fa-plus-circle"></i> Post Your Skill
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <div class="stats">
+        <div class="stat-item">
+            <div class="stat-number">2,847</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">1,523</div>
+            <div class="stat-label">Skills Exchanged</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">4.8★</div>
+            <div class="stat-label">Average Rating</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">$0</div>
+            <div class="stat-label">Money Spent</div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container" id="browse">
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('browse')">
+                <i class="fas fa-search"></i> Browse Skills
+            </button>
+            <button class="tab-btn" onclick="switchTab('post')">
+                <i class="fas fa-plus-circle"></i> Post Your Skill
+            </button>
+            <button class="tab-btn" onclick="switchTab('premium')">
+                <i class="fas fa-crown"></i> Go Premium
+            </button>
+        </div>
+
+        <!-- Browse Skills Tab -->
+        <div id="browse-tab" class="tab-content active">
+            <div class="skills-grid" id="skillsGrid">
+                <!-- Skills will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <!-- Post Skill Tab -->
+        <div id="post-tab" class="tab-content">
+            <div class="post-skill-container">
+                <h2 style="color: var(--navy); margin-bottom: 1rem; font-size: 2rem;">Post Your Skill</h2>
+                <p style="color: var(--light-blue); margin-bottom: 2rem;">Share what you're great at and find someone who needs your expertise!</p>
+                
+                <form id="postSkillForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Your Name</label>
+                            <input type="text" id="userName" placeholder="John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-map-marker-alt"></i> Location</label>
+                            <input type="text" id="userLocation" placeholder="Brooklyn, NY" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-star"></i> Skill Title</label>
+                        <input type="text" id="skillTitle" placeholder="e.g., Professional Photography, Web Development, Plumbing" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-align-left"></i> Description</label>
+                        <textarea id="skillDescription" placeholder="Describe your skill, experience level, and what you can offer..." required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-layer-group"></i> Category</label>
+                            <select id="skillCategory" required>
+                                <option value="">Select a category</option>
+                                <option value="Design">Design & Creative</option>
+                                <option value="Tech">Tech & Programming</option>
+                                <option value="Home">Home Improvement</option>
+                                <option value="Teaching">Teaching & Tutoring</option>
+                                <option value="Fitness">Fitness & Wellness</option>
+                                <option value="Business">Business & Marketing</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-clock"></i> Time Credits Available</label>
+                            <input type="number" id="timeCredits" placeholder="5" min="1" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-paper-plane"></i> Post My Skill
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Premium Tab -->
+        <div id="premium-tab" class="tab-content">
+            <div class="post-skill-container">
+                <h2 style="color: var(--navy); margin-bottom: 1rem; font-size: 2rem; text-align: center;">
+                    <i class="fas fa-crown" style="color: #ffd700;"></i> Upgrade to Premium
+                </h2>
+                <p style="color: var(--light-blue); margin-bottom: 2rem; text-align: center;">
+                    Get unlimited skill swaps, priority matching, and exclusive features
+                </p>
+
+                <div class="payment-section">
+                    <div class="premium-badge">
+                        <i class="fas fa-star"></i>
+                        Special Launch Offer - 50% Off!
+                    </div>
+
+                    <div style="background: white; padding: 2rem; border-radius: 15px; margin-bottom: 1.5rem;">
+                        <h3 style="color: var(--navy); margin-bottom: 1rem;">Premium Benefits:</h3>
+                        <ul style="color: var(--grey-blue); line-height: 2;">
+                            <li><i class="fas fa-check" style="color: var(--success);"></i> Unlimited skill swaps per month</li>
+                            <li><i class="fas fa-check" style="color: var(--success);"></i> Priority matching algorithm</li>
+                            <li><i class="fas fa-check" style="color: var(--success);"></i> Verified premium badge on profile</li>
+                            <li><i class="fas fa-check" style="color: var(--success);"></i> Access to premium-only skills</li>
+                            <li><i class="fas fa-check" style="color: var(--success);"></i> Advanced analytics and insights</li>
+                            <li><i class="fas fa-check" style="color: var(--success);"></i> 24/7 premium support</li>
+                        </ul>
+                    </div>
+
+                    <h3><i class="fab fa-paypal"></i> Choose Your Plan</h3>
+                    <div class="pricing-options" id="pricingOptions">
+                        <div class="price-card" onclick="selectPlan('monthly', 2.50)">
+                            <div class="price-amount">$2.50</div>
+                            <div class="price-label">Monthly</div>
+                            <div style="color: var(--danger); font-size: 0.8rem; text-decoration: line-through; margin-top: 0.5rem;">was $5.00</div>
+                        </div>
+                        <div class="price-card selected" onclick="selectPlan('quarterly', 6.00)">
+                            <div class="premium-badge" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; margin-bottom: 0.5rem;">BEST VALUE</div>
+                            <div class="price-amount">$6.00</div>
+                            <div class="price-label">3 Months</div>
+                            <div style="color: var(--success); font-size: 0.8rem; margin-top: 0.5rem;">Save 60%</div>
+                        </div>
+                        <div class="price-card" onclick="selectPlan('yearly', 18.00)">
+                            <div class="price-amount">$18.00</div>
+                            <div class="price-label">Annual</div>
+                            <div style="color: var(--success); font-size: 0.8rem; margin-top: 0.5rem;">Save 70%</div>
+                        </div>
+                    </div>
+
+                    <!-- PayPal Button Container -->
+                    <div id="paypal-button-container"></div>
+                    
+                    <p style="text-align: center; color: var(--light-blue); margin-top: 1rem; font-size: 0.9rem;">
+                        <i class="fas fa-lock"></i> Secure payment powered by PayPal
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="skillModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle" style="font-size: 1.5rem; color: var(--success);"></i>
+        <span id="notificationText"></span>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 SkillSwap Local. All rights reserved.</p>
+        <div style="margin-top: 1rem;">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Contact Us</a>
+        </div>
+    </footer>
+    </div>
+    <!-- End Main App Content -->
+
+    <!-- How It Works Page -->
+    <div class="how-it-works-page" id="howItWorksPage">
+        <button class="back-button" onclick="closeHowItWorks()">
+            <i class="fas fa-arrow-left"></i> Back to App
+        </button>
+
+        <div class="how-it-works-container">
+            <div class="how-it-works-header">
+                <div class="how-it-works-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h1>How SkillSwap Local Works</h1>
+                <p>Your complete guide to trading skills and building community</p>
+            </div>
+
+            <div class="guide-timeline">
+                <!-- Step 1 -->
+                <div class="guide-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h3>Create Your Profile</h3>
+                        <p>Sign up and tell us about yourself. Share your location, skills, and what you're looking to learn or get help with.</p>
+                        <div class="step-details">
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Add your name and location</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Upload a profile picture (optional)</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>List your top skills</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="guide-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <h3>Post Your Skills</h3>
+                        <p>Share what you're great at! Whether it's photography, plumbing, web design, or cooking - your skills have value.</p>
+                        <div class="step-details">
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Choose a category for your skill</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Write a clear description</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Set your available time credits</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="guide-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>Browse & Connect</h3>
+                        <p>Search for skills you need within your local area. Our platform shows you people within 5-10 miles of your location.</p>
+                        <div class="step-details">
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Filter by category or location</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Read reviews and ratings</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Send a message to connect</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="guide-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h3>Arrange the Swap</h3>
+                        <p>Agree on the details through our messaging system. Decide what you'll exchange, when, and where to meet.</p>
+                        <div class="step-details">
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Discuss what skills you'll trade</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Set a date and meeting place</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Confirm time credits to exchange</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="guide-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3>Time Banking System</h3>
+                        <p>1 hour of your time = 1 time credit, regardless of the skill. Everyone's time is valued equally!</p>
+                        <div class="step-details">
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>1 hour = 1 credit (any skill)</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Track your credits in your dashboard</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Build up credits for future swaps</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6 -->
+                <div class="guide-step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3>Complete & Review</h3>
+                        <p>After your skill swap, mark it as complete and leave a review. Build your reputation in the community!</p>
+                        <div class="step-details">
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Mark swap as completed</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Leave an honest review</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check"></i>
+                                <span>Earn badges and reputation</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="faq-section">
+                <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+                
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <h4>Is SkillSwap Local really free?</h4>
+                        <p>Yes! Basic membership is completely free. You can post unlimited skills and connect with your community at no cost. We offer a premium membership ($5/month) for additional features like unlimited swaps and priority matching.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>How does the time banking work?</h4>
+                        <p>Every skill is valued equally. 1 hour of plumbing = 1 hour of graphic design = 1 credit. This creates a fair system where everyone's time and expertise is respected.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>Is it safe to meet with strangers?</h4>
+                        <p>We recommend meeting in public places for your first few swaps. Check reviews, verify profiles, and always trust your instincts. Premium members get verified badges for extra trust.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>What if someone doesn't show up?</h4>
+                        <p>You can report no-shows through our platform. Users with multiple reports will be flagged or removed. We take community trust seriously!</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>Can I swap skills with people far away?</h4>
+                        <p>The platform is designed for local exchanges (5-10 miles), but some skills like online tutoring or design work can be done remotely. You decide!</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>What happens to unused credits?</h4>
+                        <p>Your time credits never expire! Save them up and use them whenever you need help. They're your community currency.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="guide-cta">
+                <h2>Ready to Start Swapping?</h2>
+                <p>Join thousands of neighbors building a stronger community</p>
+                <button class="btn-guide-cta" onclick="closeHowItWorks()">
+                    <i class="fas fa-rocket"></i> Browse Skills Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+
+    <script>
+        // ===== DEFINE ALL FUNCTIONS FIRST (before DOMContentLoaded) =====
+        
+        // Sample skills data
+        const skillsData = [
+            {
+                id: 1,
+                name: "Sarah Johnson",
+                initials: "SJ",
+                location: "Brooklyn, NY (2.3 miles)",
+                title: "Professional Photography",
+                description: "10+ years experience in portrait and event photography. I can help with headshots, family photos, or teach you camera basics.",
+                tags: ["Photography", "Portraits", "Events"],
+                timeCredits: 8,
+                rating: 4.9,
+                swaps: 23,
+                category: "Design"
+            },
+            {
+                id: 2,
+                name: "Michael Chen",
+                initials: "MC",
+                location: "Manhattan, NY (4.1 miles)",
+                title: "Web Development & Design",
+                description: "Full-stack developer specializing in React and Node.js. I can build websites, fix bugs, or teach programming basics.",
+                tags: ["Web Dev", "React", "JavaScript"],
+                timeCredits: 12,
+                rating: 5.0,
+                swaps: 34,
+                category: "Tech"
+            },
+            {
+                id: 3,
+                name: "Emily Rodriguez",
+                initials: "ER",
+                location: "Queens, NY (1.8 miles)",
+                title: "Home Repair & Plumbing",
+                description: "Licensed plumber with 15 years experience. Can fix leaks, install fixtures, and handle minor home repairs.",
+                tags: ["Plumbing", "Home Repair", "Handyman"],
+                timeCredits: 6,
+                rating: 4.8,
+                swaps: 45,
+                category: "Home"
+            },
+            {
+                id: 4,
+                name: "David Kim",
+                initials: "DK",
+                location: "Bronx, NY (3.5 miles)",
+                title: "Guitar & Music Lessons",
+                description: "Professional musician and teacher. I teach guitar, music theory, and songwriting for all skill levels.",
+                tags: ["Music", "Guitar", "Teaching"],
+                timeCredits: 10,
+                rating: 4.9,
+                swaps: 28,
+                category: "Teaching"
+            },
+            {
+                id: 5,
+                name: "Lisa Martinez",
+                initials: "LM",
+                location: "Brooklyn, NY (0.9 miles)",
+                title: "Yoga & Meditation Instruction",
+                description: "Certified yoga instructor (RYT-500) specializing in vinyasa and restorative yoga. Private or small group sessions available.",
+                tags: ["Yoga", "Meditation", "Wellness"],
+                timeCredits: 7,
+                rating: 5.0,
+                swaps: 31,
+                category: "Fitness"
+            },
+            {
+                id: 6,
+                name: "James Wilson",
+                initials: "JW",
+                location: "Manhattan, NY (5.2 miles)",
+                title: "Marketing & Social Media Strategy",
+                description: "10+ years in digital marketing. I can help with social media strategy, content creation, and brand development.",
+                tags: ["Marketing", "Social Media", "Branding"],
+                timeCredits: 9,
+                rating: 4.7,
+                swaps: 19,
+                category: "Business"
+            }
+        ];
+
+        // ===== NAVIGATION FUNCTIONS (must be defined before page loads) =====
+        
+        // Switch tabs
+        function switchTab(tab) {
+            console.log('switchTab called with:', tab);
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Find the button that was clicked or match by tab name
+            const clickedBtn = event && event.target ? event.target.closest('.tab-btn') : null;
+            if (clickedBtn) {
+                clickedBtn.classList.add('active');
+            } else {
+                // If called programmatically, find the right button
+                const buttons = document.querySelectorAll('.tab-btn');
+                if (tab === 'browse') buttons[0].classList.add('active');
+                else if (tab === 'post') buttons[1].classList.add('active');
+                else if (tab === 'premium') buttons[2].classList.add('active');
+            }
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            const tabContent = document.getElementById(`${tab}-tab`);
+            if (tabContent) {
+                tabContent.classList.add('active');
+                console.log('Tab switched to:', tab);
+            } else {
+                console.error('Tab content not found for:', tab);
+            }
+        }
+
+        // Scroll to tab
+        function scrollToTab(tab) {
+            console.log('scrollToTab called with:', tab);
+            switchTab(tab);
+            const browseSection = document.getElementById('browse');
+            if (browseSection) {
+                browseSection.scrollIntoView({ behavior: 'smooth' });
+                console.log('Scrolled to browse section');
+            } else {
+                console.error('Browse section not found');
+            }
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            console.log('toggleMobileMenu called');
+            const navMenu = document.getElementById('navMenu');
+            const menuIcon = document.getElementById('mobileMenuIcon');
+            
+            if (navMenu) navMenu.classList.toggle('active');
+            
+            if (navMenu && navMenu.classList.contains('active')) {
+                if (menuIcon) menuIcon.className = 'fas fa-times';
+            } else {
+                if (menuIcon) menuIcon.className = 'fas fa-bars';
+            }
+        }
+
+        function closeMobileMenu() {
+            console.log('closeMobileMenu called');
+            const navMenu = document.getElementById('navMenu');
+            const menuIcon = document.getElementById('mobileMenuIcon');
+            
+            if (navMenu && menuIcon) {
+                navMenu.classList.remove('active');
+                menuIcon.className = 'fas fa-bars';
+            }
+        }
+
+        // Landing Page Transition
+        function enterApp() {
+            console.log('🚀 enterApp function called');
+            
+            const landingPage = document.getElementById('landingPage');
+            const mainApp = document.getElementById('mainApp');
+            
+            if (!landingPage || !mainApp) {
+                console.error('❌ Elements not found');
+                alert('Error: Page elements not found. Please refresh.');
+                return;
+            }
+            
+            console.log('✅ Elements found, starting transition');
+            
+            // Give immediate visual feedback
+            const startButton = document.getElementById('startButton');
+            if (startButton) {
+                startButton.style.transform = 'scale(0.95)';
+                startButton.style.opacity = '0.8';
+            }
+            
+            // Mark that user has seen landing page
+            try {
+                sessionStorage.setItem('hasSeenLanding', 'true');
+                console.log('✅ Session storage set');
+            } catch (e) {
+                console.warn('⚠️ Session storage not available:', e);
+            }
+            
+            // Update URL without triggering hashchange
+            if (window.history && window.history.pushState) {
+                window.history.pushState(null, null, '#skip-landing');
+            } else {
+                window.location.hash = 'skip-landing';
+            }
+            
+            // Fade out landing page
+            landingPage.classList.add('fade-out');
+            console.log('✅ Fade out started');
+            
+            // Show main app after animation
+            setTimeout(() => {
+                landingPage.style.display = 'none';
+                mainApp.classList.add('show');
+                mainApp.style.display = 'block';
+                
+                // Smooth scroll to top
+                try {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } catch (e) {
+                    window.scrollTo(0, 0);
+                }
+                
+                console.log('✅ App loaded successfully');
+            }, 1000);
+        }
+
+        // How It Works Page Functions
+        function openHowItWorks() {
+            console.log('openHowItWorks called');
+            const howItWorksPage = document.getElementById('howItWorksPage');
+            if (howItWorksPage) {
+                howItWorksPage.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                howItWorksPage.scrollTop = 0;
+                console.log('How It Works page opened');
+            } else {
+                console.error('How It Works page element not found');
+            }
+        }
+
+        function closeHowItWorks() {
+            console.log('closeHowItWorks called');
+            const howItWorksPage = document.getElementById('howItWorksPage');
+            if (howItWorksPage) howItWorksPage.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            const landingPage = document.getElementById('landingPage');
+            const mainApp = document.getElementById('mainApp');
+            
+            if (landingPage && landingPage.style.display !== 'none') {
+                enterApp();
+            } else if (mainApp && !mainApp.classList.contains('show')) {
+                mainApp.classList.add('show');
+            }
+        }
+
+        // Get Started Function
+        function openGetStarted() {
+            console.log('openGetStarted called');
+            const landingPage = document.getElementById('landingPage');
+            const mainApp = document.getElementById('mainApp');
+            
+            if (landingPage && landingPage.style.display !== 'none') {
+                enterApp();
+            } else if (mainApp && !mainApp.classList.contains('show')) {
+                mainApp.classList.add('show');
+            }
+            
+            setTimeout(() => {
+                const postTab = document.querySelector('.tab-btn:nth-child(2)');
+                if (postTab) {
+                    postTab.click();
+                    console.log('Switched to Post tab');
+                }
+                
+                setTimeout(() => {
+                    const browseSection = document.getElementById('browse');
+                    if (browseSection) {
+                        browseSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 300);
+                
+                showNotification('🎉 Ready to post your first skill? Fill out the form below!', 'success');
+            }, 500);
+        }
+
+        // ===== END OF FUNCTION DEFINITIONS =====
+
+        // Render skills
+        function renderSkills() {
+            const grid = document.getElementById('skillsGrid');
+            grid.innerHTML = skillsData.map(skill => `
+                <div class="skill-card" onclick="openModal(${skill.id})">
+                    <div class="skill-header">
+                        <div class="skill-avatar">${skill.initials}</div>
+                        <div class="skill-info">
+                            <div class="skill-user">${skill.name}</div>
+                            <div class="skill-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${skill.location}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="skill-title">${skill.title}</div>
+                    <div class="skill-description">${skill.description}</div>
+                    <div class="skill-tags">
+                        ${skill.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                    <div class="skill-footer">
+                        <div class="time-bank">
+                            <i class="fas fa-clock"></i>
+                            ${skill.timeCredits} hours available
+                        </div>
+                        <button class="btn-contact">Connect</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Open modal
+        function openModal(skillId) {
+            const skill = skillsData.find(s => s.id === skillId);
+            const modal = document.getElementById('skillModal');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalBody.innerHTML = `
+                <div class="user-profile">
+                    <div class="user-profile-avatar">${skill.initials}</div>
+                    <h2>${skill.name}</h2>
+                    <div class="rating">
+                        ${'★'.repeat(Math.floor(skill.rating))}${'☆'.repeat(5 - Math.floor(skill.rating))}
+                        ${skill.rating} (${skill.swaps} swaps completed)
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3><i class="fas fa-star"></i> ${skill.title}</h3>
+                    <p>${skill.description}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> Location</h3>
+                    <p>${skill.location}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3><i class="fas fa-clock"></i> Availability</h3>
+                    <p>${skill.timeCredits} time credits available for exchange</p>
+                </div>
+
+                <div class="chat-preview">
+                    <h3 style="color: var(--navy); margin-bottom: 1rem;">Send a Message</h3>
+                    <div class="chat-input">
+                        <input type="text" placeholder="Hi! I'd love to swap skills with you..." id="chatMessage">
+                        <button onclick="sendMessage(${skill.id})">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn-submit" onclick="initiateSwap(${skill.id})">
+                    <i class="fas fa-handshake"></i> Request Skill Swap
+                </button>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('skillModal').classList.remove('active');
+        }
+
+        // Post skill form
+        document.getElementById('postSkillForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newSkill = {
+                id: skillsData.length + 1,
+                name: document.getElementById('userName').value,
+                initials: document.getElementById('userName').value.split(' ').map(n => n[0]).join(''),
+                location: document.getElementById('userLocation').value,
+                title: document.getElementById('skillTitle').value,
+                description: document.getElementById('skillDescription').value,
+                tags: [document.getElementById('skillCategory').value],
+                timeCredits: parseInt(document.getElementById('timeCredits').value),
+                rating: 5.0,
+                swaps: 0,
+                category: document.getElementById('skillCategory').value
+            };
+            
+            skillsData.unshift(newSkill);
+            renderSkills();
+            
+            showNotification('Your skill has been posted successfully!', 'success');
+            
+            // Reset form and switch to browse tab
+            this.reset();
+            setTimeout(() => {
+                switchTab('browse');
+                document.getElementById('browse').scrollIntoView({ behavior: 'smooth' });
+            }, 1500);
+        });
+
+        // Send message
+        function sendMessage(skillId) {
+            const message = document.getElementById('chatMessage').value;
+            if (message.trim()) {
+                showNotification('Message sent! They will respond soon.', 'success');
+                document.getElementById('chatMessage').value = '';
+            }
+        }
+
+        // Initiate swap
+        function initiateSwap(skillId) {
+            showNotification('Swap request sent! You will be notified when they respond.', 'success');
+            closeModal();
+        }
+
+        // Show notification
+        function showNotification(text, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = text;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // PayPal Integration
+        let selectedPlan = { type: 'quarterly', amount: 6.00 };
+
+        function selectPlan(type, amount) {
+            selectedPlan = { type, amount };
+            
+            // Update UI
+            document.querySelectorAll('.price-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // Re-render PayPal buttons
+            renderPayPalButtons();
+        }
+
+        function renderPayPalButtons() {
+            const container = document.getElementById('paypal-button-container');
+            container.innerHTML = ''; // Clear existing buttons
+            
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    return actions.order.create({
+                        purchase_units: [{
+                            description: `SkillSwap Premium - ${selectedPlan.type}`,
+                            amount: {
+                                currency_code: 'USD',
+                                value: selectedPlan.amount.toFixed(2)
+                            }
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    return actions.order.capture().then(function(details) {
+                        showNotification(`Thank you ${details.payer.name.given_name}! You are now a Premium member!`, 'success');
+                        
+                        // Update UI to show premium status
+                        setTimeout(() => {
+                            alert('Welcome to Premium! You now have access to:\n\n✓ Unlimited skill swaps\n✓ Priority matching\n✓ Premium badge\n✓ And much more!');
+                        }, 1000);
+                    });
+                },
+                onError: function(err) {
+                    showNotification('Payment failed. Please try again.', 'error');
+                    console.error('PayPal Error:', err);
+                }
+            }).render('#paypal-button-container');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded'); // Debug
+            
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+            
+            // Check if user has seen landing page OR if hash is skip-landing
+            const hasSeenLanding = sessionStorage.getItem('hasSeenLanding');
+            const skipLanding = window.location.hash === '#skip-landing';
+            
+            if (hasSeenLanding || skipLanding) {
+                // Skip landing page, show main app immediately
+                document.getElementById('landingPage').style.display = 'none';
+                document.getElementById('mainApp').classList.add('show');
+                
+                // Set session storage if coming from hash
+                if (skipLanding) {
+                    sessionStorage.setItem('hasSeenLanding', 'true');
+                }
+            }
+            
+            // Prevent going back to landing page when hash changes
+            window.addEventListener('hashchange', function() {
+                const hasSeenLanding = sessionStorage.getItem('hasSeenLanding');
+                if (hasSeenLanding && window.location.hash !== '#skip-landing') {
+                    // User has already entered app, keep them in main app
+                    const landingPage = document.getElementById('landingPage');
+                    const mainApp = document.getElementById('mainApp');
+                    if (landingPage && mainApp) {
+                        landingPage.style.display = 'none';
+                        mainApp.classList.add('show');
+                    }
+                }
+            });
+            
+            // ULTIMATE FALLBACK: Make entire landing page tappable
+            const landingPage = document.getElementById('landingPage');
+            if (landingPage) {
+                let tapCount = 0;
+                let tapTimer;
+                
+                landingPage.addEventListener('touchstart', function(e) {
+                    tapCount++;
+                    const debugInfo = document.getElementById('debugInfo');
+                    if (debugInfo) debugInfo.textContent = `Tap ${tapCount} detected! (Tap button or anywhere twice)`;
+                    
+                    // If tapped twice quickly, enter app
+                    if (tapCount === 2) {
+                        if (debugInfo) debugInfo.textContent = '🚀 Double tap! Loading...';
+                        setTimeout(() => enterApp(), 300);
+                    }
+                    
+                    // Reset tap count after 1 second
+                    clearTimeout(tapTimer);
+                    tapTimer = setTimeout(() => {
+                        tapCount = 0;
+                    }, 1000);
+                }, { passive: true });
+            }
+            
+            // Add event listener for start button - multiple methods for compatibility
+            const startButton = document.getElementById('startButton');
+            if (startButton) {
+                console.log('✅ Start button found, attaching events');
+                
+                // Method 1: Click event (works on desktop and some mobile)
+                startButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('👆 Click event fired');
+                    enterApp();
+                    return false;
+                }, false);
+                
+                // Method 2: Touchstart event for iOS and Android
+                startButton.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('📱 Touchstart event fired');
+                    this.style.transform = 'scale(0.95)';
+                    const debugInfo = document.getElementById('debugInfo');
+                    if (debugInfo) debugInfo.textContent = '✅ Touch detected!';
+                }, { passive: false });
+                
+                // Method 3: Touchend event (most reliable on mobile)
+                startButton.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('📱 Touchend event fired');
+                    this.style.transform = 'scale(1)';
+                    const debugInfo = document.getElementById('debugInfo');
+                    if (debugInfo) debugInfo.textContent = '🚀 Loading app...';
+                    enterApp();
+                    return false;
+                }, { passive: false });
+                
+                // Method 4: Pointer events (modern browsers)
+                startButton.addEventListener('pointerdown', function(e) {
+                    e.preventDefault();
+                    console.log('👉 Pointer event fired');
+                    enterApp();
+                }, false);
+                
+                console.log('✅ All event listeners attached to start button');
+            } else {
+                console.error('❌ Start button not found!');
+                alert('Start button not found! Please refresh the page.');
+            }
+            
+            renderSkills();
+            
+            // Add listeners for hero buttons
+            const browseBtnHero = document.getElementById('browseBtnHero');
+            const postBtnHero = document.getElementById('postBtnHero');
+            
+            if (browseBtnHero) {
+                browseBtnHero.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    scrollToTab('browse');
+                });
+            }
+            
+            if (postBtnHero) {
+                postBtnHero.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    scrollToTab('post');
+                });
+            }
+            
+            // Only render PayPal buttons if SDK is loaded
+            if (typeof paypal !== 'undefined') {
+                renderPayPalButtons();
+            } else {
+                document.getElementById('paypal-button-container').innerHTML = 
+                    '<p style="text-align: center; color: var(--danger); padding: 1rem;">⚠️ Please replace YOUR_PAYPAL_CLIENT_ID in the code with your actual PayPal client ID</p>';
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('skillModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Theme Toggle Functions
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+            
+            // Show notification
+            showNotification(
+                newTheme === 'dark' ? '🌙 Dark mode activated' : '☀️ Light mode activated',
+                'success'
+            );
+        }
+
+        function updateThemeIcon(theme) {
+            const themeIcon = document.getElementById('themeIcon');
+            if (theme === 'dark') {
+                themeIcon.className = 'fas fa-sun';
+            } else {
+                themeIcon.className = 'fas fa-moon';
+            }
+        }
+
+        // Alternative: Allow scroll to enter app
+        let scrollTimeout;
+        window.addEventListener('scroll', function() {
+            if (document.getElementById('landingPage').style.display !== 'none') {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    if (window.scrollY > 100) {
+                        enterApp();
+                    }
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
